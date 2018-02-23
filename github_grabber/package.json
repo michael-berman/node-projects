@@ -5,7 +5,7 @@
   "main": "animal_fun.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon animal_fun.js"
+    "start": "nodemon github_grabber.js"
   },
   "keywords": [],
   "author": "",
