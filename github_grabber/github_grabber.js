@@ -3,27 +3,44 @@ const qs = require('querystring');
 const http = require('http');
 const https = require('https');
 
+function buildOptionsObj (username) {
+  return {
+    hostname: `api.github.com`,
+    path: `/users/${username}/starred`,
+    headers: {
+      'User-Agent': 'github-grabber'
+    }
+  }
+}
+
 const githubServer = http.createServer((req, res) => {
   if (req.method === 'POST') {
-    res.end("I'm a POST request!");
 
-    let body = '';
-
+    let requestBody = '';
     req.on('data', bufferData => {
-      body += bufferData;
-
-      if (body.length > 1e6) {
-        req.connection.destroy();
-      }
+      requestBody += bufferData;
     })
 
     req.on('end', () => {
-      const username = qs.parse(body).username;
-      res.end(username);
+      const username = qs.parse(requestBody).username;
+      console.log(username);
+      const ws = fs.createWriteStream(`./${username}_starred_repos.txt`)
+      const opts = buildOptionsObj(username);
+
+      https.get(opts, (dataStream) => {
+        let repoData = '';
+        dataStream.on('data', bufferData => { repoData += bufferData })
+        dataStream.on('end', () => {
+          const repos = JSON.parse(repoData).map(repo => {
+            return `Repo: ${repo.name}. Stars: ${repo.stargazers_count}.`
+          }).join('\n')
+          ws.write(repos);
+          res.end(repos);
+        })
+      })
     })
 
   }
-  res.end("Danger, not a POST request!");
 })
 
 githubServer.listen(8080, () => console.log('Listening on 8080'));
