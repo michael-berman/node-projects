@@ -24,6 +24,20 @@ class ChatUI {
     this.msgList.appendChild(newMessage);
   }
 
+  processUserInput () {
+    const msg = this.getInput();
+    let response;
+    if (msg[0] === '/') {
+      response = this.chat.processCommand(msg);
+      if (response) {
+        this.addMessage(response);
+      }
+    } else {
+      this.sendMessage();
+      this.addMessage(msg);
+    }
+  }
+
 }
 
 module.exports = ChatUI;
