@@ -8,11 +8,15 @@ class Chat {
   }
 
   processCommand (command) {
+    const words = command.split(' ');
+    const parsedCmd = words[0].substring(1, words[0].length).toLowerCase();
     let message = false;
 
-    switch (command) {
+    switch (parsedCmd) {
       case 'nick':
-        this.socket.emit('nameAttempt', command);
+        words.shift();
+        const name = words.join();
+        this.socket.emit('nameAttempt', name);
         break;
       default:
         message = 'Unrecognized command';
