@@ -90,6 +90,7 @@ const chatServer = {
       this.joinRoom(socket, 'lobby');
       this.handleMessageBroadcast(socket, nickNames);
       this.handleNameChangeAttempts(socket, nickNames, namesUsed);
+      this.handleRoomJoinRequest(socket);
     });
   }
 };

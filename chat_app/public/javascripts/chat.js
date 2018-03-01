@@ -3,8 +3,12 @@ class Chat {
     this.socket = socket;
   }
 
-  sendMessage (msg) {
-    this.socket.emit('message', {text: msg});
+  sendMessage (msg, room) {
+    this.socket.emit('message', {text: msg, room});
+  }
+
+  changeRoom (room) {
+    this.socket.emit('join', {newRoom: room});
   }
 
   processCommand (command) {
@@ -13,6 +17,11 @@ class Chat {
     let message = false;
 
     switch (parsedCmd) {
+      case 'join':
+        words.shift();
+        const room = words.join();
+        this.changeRoom(room);
+        break;
       case 'nick':
         words.shift();
         const name = words.join();
