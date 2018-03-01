@@ -18,4 +18,5 @@ document.addEventListener('DOMContentLoaded', () => {
     myChat.addMessage(message);
   });
 
+  myChat.input.focus();
 });

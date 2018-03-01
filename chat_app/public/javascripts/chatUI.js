@@ -8,6 +8,7 @@ class ChatUI {
   this.roomList = document.querySelector('ul#room-list');
   this.input = document.querySelector('input');
   this.room = document.querySelector('#room');
+  this.submitHandler();
   }
 
   getInput () {
@@ -24,8 +25,17 @@ class ChatUI {
     this.msgList.appendChild(newMessage);
   }
 
+  submitHandler(){
+    this.form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      this.processUserInput();
+      this.input.value = "";
+    });
+  }
+
   processUserInput () {
     const msg = this.getInput();
+    console.log(msg);
     let response;
     if (msg[0] === '/') {
       response = this.chat.processCommand(msg);

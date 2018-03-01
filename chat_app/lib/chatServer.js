@@ -58,13 +58,21 @@ const chatServer = {
       }
     });
   },
+  handleMessageBroadcast (socket, nickNames) {
+    socket.on('message', (message) => {
+      socket.broadcast.to(message.room).emit('message', {
+        text: `${nickNames[socket.id]}: ${message.text}`
+      });
+    });
+  },
   listen (server) {
     chat = io(server);
 
     chat.on('connection', (socket) => {
       console.log("connected");
-      guestNumber = this.assignGuestName()
-
+      guestNumber = this.assignGuestName(socket, guestNumber,
+                                          nickNames, namesUsed);
+      this.handleMessageBroadcast(socket, nickNames);
       this.handleNameChangeAttempts(socket, nickNames, namesUsed);
     });
   }
