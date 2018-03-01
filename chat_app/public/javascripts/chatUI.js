@@ -19,6 +19,16 @@ class ChatUI {
     this.chat.sendMessage(this.getInput);
   }
 
+  setRoom (room) {
+    this.room.textContent = room;
+  }
+
+  addRoom (room) {
+    const newRoom = document.createElement('li');
+    newRoom.textContent = room;
+    this.roomList.appendChild(newRoom);
+  }
+
   addMessage (msg) {
     const newMessage = document.createElement('li');
     newMessage.textContent = msg;

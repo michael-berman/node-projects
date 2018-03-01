@@ -29,6 +29,10 @@ const chatServer = {
       ];
     });
   },
+  listRooms (socket) {
+    const rooms = Object.keys(socket.rooms);
+    return rooms.filter(r => r !== socket.id);
+  },
   handleNameChangeAttempts (socket, nickNames, namesUsed) {
     socket.on('nameAttempt', (name) => {
       if (name.toLowerCase().startsWith('guest')) {
@@ -79,6 +83,14 @@ const chatServer = {
     socket.broadcast.to(room).emit('message', {
       text: `${nickNames[socket.id]} has joined ${room}.`
     });
+
+    chat.of('/').in(`${room}`).clients((err, sockets) => {
+      if (err) return console.error(err);
+      const usersInRoom = sockets.map(socketId => nickNames[socketId])
+        .join(", ");
+      const usersInRoomSummary = `Users currently in ${room}: ${usersInRoom}`;
+      socket.emit('message', {text: usersInRoomSummary});
+    });
   },
   listen (server) {
     chat = io(server);
@@ -91,7 +103,16 @@ const chatServer = {
       this.handleMessageBroadcast(socket, nickNames);
       this.handleNameChangeAttempts(socket, nickNames, namesUsed);
       this.handleRoomJoinRequest(socket);
+
+      socket.on('rooms', () => {
+        let rooms = [];
+        for (let s in chat.sockets.sockets) {
+          rooms = rooms.concat(this.listRooms(chat.sockets.sockets[s]));
+        }
+        socket.emit('rooms', rooms);
+      });
     });
+
   }
 };
 
