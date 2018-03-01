@@ -6,6 +6,7 @@ let chat;
 
 const nickNames = {};
 let namesUsed = [];
+const currentRoom = {};
 
 const chatServer = {
   assignGuestName (socket, guestNumber, nickNames, namesUsed) {
@@ -65,6 +66,20 @@ const chatServer = {
       });
     });
   },
+  handleRoomJoinRequest (socket) {
+    socket.on('join', (room) => {
+      socket.leave(currentRoom[socket.id]);
+      this.joinRoom(socket, room.newRoom);
+    });
+  },
+  joinRoom (socket, room) {
+    socket.join(room);
+    currentRoom[socket.id] = room;
+    socket.emit('joinResult', {room});
+    socket.broadcast.to(room).emit('message', {
+      text: `${nickNames[socket.id]} has joined ${room}.`
+    });
+  },
   listen (server) {
     chat = io(server);
 
@@ -72,6 +87,7 @@ const chatServer = {
       console.log("connected");
       guestNumber = this.assignGuestName(socket, guestNumber,
                                           nickNames, namesUsed);
+      this.joinRoom(socket, 'lobby');
       this.handleMessageBroadcast(socket, nickNames);
       this.handleNameChangeAttempts(socket, nickNames, namesUsed);
     });
