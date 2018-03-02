@@ -19,7 +19,7 @@ const chatServer = {
     namesUsed.push(name);
     return guestNumber + 1;
   },
-  handleClientDisconnet (socket) {
+  handleClientDisconnection (socket) {
     socket.on('disconnect', () => {
       const nameIdx = namesUsed.indexOf(nickNames[socket.id]);
       delete nickNames[socket.id];
@@ -111,6 +111,8 @@ const chatServer = {
         }
         socket.emit('rooms', rooms);
       });
+
+      this.handleClientDisconnection(socket);
     });
 
   }
