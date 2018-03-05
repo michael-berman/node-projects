@@ -3,15 +3,18 @@ const app = express();
 const morgan = require('morgan');
 const path = require('path');
 const fs = require('fs');
+const bodyParser = require('body-parser');
+const methodOverride = require('method-override');
+
 require('dotenv').config({ path: './variables.env' });
 
 app.set('views', 'views');
 app.set('view engine', 'pug');
 
-app.use(express.static(path.join(__dirname, 'styles')));
-
-
 app.use(morgan('combined'));
+app.use(express.static(path.join(__dirname, 'styles')));
+app.use(methodOverride('_method'));
+const urlencodedParser = bodyParser.urlencoded({ extended: false });
 
 app.listen(process.env.PORT, () => {
   console.log(`Listening on port ${process.env.PORT}`);
@@ -19,13 +22,11 @@ app.listen(process.env.PORT, () => {
 
 // Temporary blog array
 
-const blogFile = fs.readFileSync('./seeds/blogs.json', 'utf-8');
-const blogArray = JSON.parse(blogFile);
-
 // Routes
 
 // Index
 app.get("/", (req, res) => {
+  const blogArray = JSON.parse(fs.readFileSync('./seeds/blogs.json', 'utf-8'));
   res.render('index', {blogs: blogArray});
 });
 
@@ -37,6 +38,7 @@ app.get("/new", (req, res) => {
 
 // Show
 app.get("/:blogId", (req, res) => {
+  const blogArray = JSON.parse(fs.readFileSync('./seeds/blogs.json', 'utf-8'));
   let foundBlog;
 
   blogArray.forEach(blog => {
@@ -51,6 +53,7 @@ app.get("/:blogId", (req, res) => {
 
 // Edit
 app.get("/:blogId/edit", (req, res) => {
+  const blogArray = JSON.parse(fs.readFileSync('./seeds/blogs.json', 'utf-8'));
   let foundBlog;
 
   blogArray.forEach(blog => {
@@ -60,4 +63,24 @@ app.get("/:blogId/edit", (req, res) => {
   });
 
   res.render('edit', {blog: foundBlog});
+});
+
+// Post
+app.post('/', urlencodedParser, (req, res) => {
+  const blogArray = JSON.parse(fs.readFileSync('./seeds/blogs.json', 'utf-8'));
+
+  const newBlog = {
+    author: req.body.author || 'Mike',
+    title: req.body.title || 'BLOG TITLE',
+    _id: Math.floor(Math.random(10000)),
+    body: req.body.blog_body || 'Just blog things',
+    updatedAt: Date.now(),
+    createdAt: Date.now()
+  };
+
+  blogArray.push(newBlog);
+
+  fs.writeFileSync('./seeds/blogs.json', JSON.stringify(blogArray, null, 2));
+
+  res.redirect(303, '/');
 });
