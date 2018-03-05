@@ -84,3 +84,42 @@ app.post('/', urlencodedParser, (req, res) => {
 
   res.redirect(303, '/');
 });
+
+// Delete
+app.delete('/:blogId', (req, res) => {
+  const blogArray = JSON.parse(fs.readFileSync('./seeds/blogs.json', 'utf-8'));
+  const newBlogArray = blogArray.filter(blog => blog._id !== req.params.blogId);
+
+  fs.writeFileSync('./seeds/blogs.json', JSON.stringify(newBlogArray, null, 2));
+
+  res.redirect(303, '/');
+});
+
+
+// Put
+app.put('/:blogId', urlencodedParser, (req, res) => {
+
+  const blogArray = JSON.parse(fs.readFileSync('./seeds/blogs.json', 'utf-8'));
+  let blog, blogIdx;
+  for (let i = 0; i < blogArray.length; i++) {
+    if (blogArray[i]._id === req.params.blogId) {
+      blog = blogArray[i];
+      blogIdx = i;
+      break;
+    }
+  }
+  if (blog !== undefined) {
+    const { author, title, blog_body: body } = req.body;
+    const updatedBlog = Object.assign({}, blog, {
+      author,
+      title,
+      body,
+      updatedAt: Date.now()
+    });
+    blogArray[blogIdx] = updatedBlog;
+    fs.writeFileSync('./seeds/blogs.json', JSON.stringify(blogArray, null, 2));
+    res.redirect(303, '/');
+  } else {
+    res.status(404).end('Blog Not Found');
+  }
+});
