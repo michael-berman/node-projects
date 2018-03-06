@@ -4,9 +4,25 @@ const morgan = require('morgan');
 const path = require('path');
 const fs = require('fs');
 const bodyParser = require('body-parser');
+const uuid = require('uuid/v1');
 const methodOverride = require('method-override');
+const mongoose = require('mongoose');
+
 
 require('dotenv').config({ path: './variables.env' });
+mongoose.connect(process.env.DATABASE);
+
+const Schema = mongoose.Schema;
+const blogSchema = new Schema({
+  author: String,
+  title: String,
+  body: String,
+  updatedAt: { type: Date, default: Date.now },
+  createdAt: { type: Date, default: Date.now }
+});
+
+const Blog = mongoose.model('Blog', blogSchema);
+
 
 app.set('views', 'views');
 app.set('view engine', 'pug');
@@ -20,13 +36,12 @@ app.listen(process.env.PORT, () => {
   console.log(`Listening on port ${process.env.PORT}`);
 });
 
-// Temporary blog array
-
 // Routes
 
 // Index
 app.get("/", (req, res) => {
-  const blogArray = JSON.parse(fs.readFileSync('./seeds/blogs.json', 'utf-8'));
+  const blogArray = JSON.parse(fs.readFileSync('./seeds/blogs.json',
+                                                'utf-8'));
   res.render('index', {blogs: blogArray});
 });
 
@@ -38,7 +53,8 @@ app.get("/new", (req, res) => {
 
 // Show
 app.get("/:blogId", (req, res) => {
-  const blogArray = JSON.parse(fs.readFileSync('./seeds/blogs.json', 'utf-8'));
+  const blogArray = JSON.parse(fs.readFileSync('./seeds/blogs.json',
+                                                'utf-8'));
   let foundBlog;
 
   blogArray.forEach(blog => {
@@ -53,7 +69,8 @@ app.get("/:blogId", (req, res) => {
 
 // Edit
 app.get("/:blogId/edit", (req, res) => {
-  const blogArray = JSON.parse(fs.readFileSync('./seeds/blogs.json', 'utf-8'));
+  const blogArray = JSON.parse(fs.readFileSync('./seeds/blogs.json',
+                                                'utf-8'));
   let foundBlog;
 
   blogArray.forEach(blog => {
@@ -67,7 +84,8 @@ app.get("/:blogId/edit", (req, res) => {
 
 // Post
 app.post('/', urlencodedParser, (req, res) => {
-  const blogArray = JSON.parse(fs.readFileSync('./seeds/blogs.json', 'utf-8'));
+  const blogArray = JSON.parse(fs.readFileSync('./seeds/blogs.json',
+                                                'utf-8'));
 
   const newBlog = {
     author: req.body.author || 'Mike',
@@ -80,17 +98,20 @@ app.post('/', urlencodedParser, (req, res) => {
 
   blogArray.push(newBlog);
 
-  fs.writeFileSync('./seeds/blogs.json', JSON.stringify(blogArray, null, 2));
+  fs.writeFileSync('./seeds/blogs.json',
+    JSON.stringify(blogArray, null, 2));
 
   res.redirect(303, '/');
 });
 
 // Delete
 app.delete('/:blogId', (req, res) => {
-  const blogArray = JSON.parse(fs.readFileSync('./seeds/blogs.json', 'utf-8'));
+  const blogArray = JSON.parse(fs.readFileSync('./seeds/blogs.json',
+                                                'utf-8'));
   const newBlogArray = blogArray.filter(blog => blog._id !== req.params.blogId);
 
-  fs.writeFileSync('./seeds/blogs.json', JSON.stringify(newBlogArray, null, 2));
+  fs.writeFileSync('./seeds/blogs.json', JSON.stringify(newBlogArray,
+                                                        null, 2));
 
   res.redirect(303, '/');
 });
@@ -99,7 +120,8 @@ app.delete('/:blogId', (req, res) => {
 // Put
 app.put('/:blogId', urlencodedParser, (req, res) => {
 
-  const blogArray = JSON.parse(fs.readFileSync('./seeds/blogs.json', 'utf-8'));
+  const blogArray = JSON.parse(fs.readFileSync('./seeds/blogs.json',
+                                                'utf-8'));
   let blog, blogIdx;
   for (let i = 0; i < blogArray.length; i++) {
     if (blogArray[i]._id === req.params.blogId) {
@@ -117,7 +139,8 @@ app.put('/:blogId', urlencodedParser, (req, res) => {
       updatedAt: Date.now()
     });
     blogArray[blogIdx] = updatedBlog;
-    fs.writeFileSync('./seeds/blogs.json', JSON.stringify(blogArray, null, 2));
+    fs.writeFileSync('./seeds/blogs.json', JSON.stringify(blogArray,
+                                                          null, 2));
     res.redirect(303, '/');
   } else {
     res.status(404).end('Blog Not Found');

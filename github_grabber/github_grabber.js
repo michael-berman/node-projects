@@ -19,7 +19,7 @@ const githubServer = http.createServer((req, res) => {
     let requestBody = '';
     req.on('data', bufferData => {
       requestBody += bufferData;
-    })
+    });
 
     req.on('end', () => {
       const username = qs.parse(requestBody).username;
